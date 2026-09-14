@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/auth/auth_service.dart';
-import 'features/auth/register_page.dart';
+import 'features/auth/login_page.dart';
 import 'features/home/home_page.dart';
 
 void main() {
@@ -45,6 +45,6 @@ class AuthGate extends StatelessWidget {
       );
     }
 
-    return auth.estaAutenticado ? const HomePage() : const RegisterPage();
+    return auth.estaAutenticado ? const HomePage() : const LoginPage();
   }
 }

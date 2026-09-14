@@ -15,12 +15,12 @@ void main() {
         .setMockMethodCallHandler(channel, (call) async => null);
   });
 
-  testWidgets('La app arranca y muestra la pantalla de registro', (
+  testWidgets('La app arranca y muestra la pantalla de login', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const FashionStoreApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Crear cuenta'), findsWidgets);
+    expect(find.text('Ingresar'), findsOneWidget);
   });
 }

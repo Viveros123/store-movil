@@ -26,6 +26,13 @@ class ApiClient {
     return headers;
   }
 
+  /// Para `/auth/login`, que espera `application/x-www-form-urlencoded`
+  /// (OAuth2PasswordRequestForm de FastAPI), no JSON.
+  Future<dynamic> postForm(String path, Map<String, String> fields) async {
+    final res = await _wrap(() => http.post(_uri(path), body: fields));
+    return _decode(res);
+  }
+
   Future<dynamic> get(String path, {bool auth = true}) async {
     final res = await _wrap(
       () => http.get(_uri(path), headers: _headers(auth: auth)),

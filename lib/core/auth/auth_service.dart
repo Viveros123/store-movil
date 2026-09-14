@@ -64,6 +64,49 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// CU2 — login.
+  Future<void> login({required String email, required String password}) async {
+    final data = await api.postForm('/auth/login', {
+      'username': email,
+      'password': password,
+    }) as Map<String, dynamic>;
+
+    _token = data['access_token'] as String;
+    _usuario = Usuario.fromJson(data['usuario'] as Map<String, dynamic>);
+    await _tokenStorage.guardar(_token!);
+    notifyListeners();
+  }
+
+  /// CU2 — editar los propios datos (nombre, apellido, teléfono).
+  Future<void> actualizarMiCuenta({
+    String? nombre,
+    String? apellido,
+    String? telefono,
+  }) async {
+    final data = await api.patch(
+      '/auth/me',
+      body: {
+        if (nombre != null) 'nombre': nombre,
+        if (apellido != null) 'apellido': apellido,
+        if (telefono != null) 'telefono': telefono,
+      },
+    ) as Map<String, dynamic>;
+
+    _usuario = Usuario.fromJson(data);
+    notifyListeners();
+  }
+
+  /// CU2 — cambiar la propia contraseña (verifica la actual en el backend).
+  Future<void> cambiarPassword({
+    required String actual,
+    required String nueva,
+  }) {
+    return api.post(
+      '/auth/cambiar-password',
+      body: {'password_actual': actual, 'password_nueva': nueva},
+    );
+  }
+
   Future<void> logout() async {
     _token = null;
     _usuario = null;

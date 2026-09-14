@@ -3,54 +3,41 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_service.dart';
 import '../../core/network/api_exception.dart';
-import 'login_page.dart';
+import 'register_page.dart';
 
-/// CU1 — Registrar Cliente.
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+/// CU2 — Iniciar sesión.
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-
-  final _nombreCtrl = TextEditingController();
-  final _apellidoCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _telefonoCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _confirmarCtrl = TextEditingController();
 
   bool _enviando = false;
   bool _verPassword = false;
 
   @override
   void dispose() {
-    _nombreCtrl.dispose();
-    _apellidoCtrl.dispose();
     _emailCtrl.dispose();
-    _telefonoCtrl.dispose();
     _passwordCtrl.dispose();
-    _confirmarCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _registrar() async {
+  Future<void> _ingresar() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _enviando = true);
     try {
-      await context.read<AuthService>().registrar(
-        nombre: _nombreCtrl.text.trim(),
-        apellido: _apellidoCtrl.text.trim(),
+      await context.read<AuthService>().login(
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
-        telefono: _telefonoCtrl.text.trim(),
       );
-      // La navegación al home la resuelve el AuthGate en main.dart
-      // al notificar el cambio de estado (estaAutenticado pasa a true).
+      // El AuthGate en main.dart navega solo al detectar la sesión activa.
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -82,55 +69,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Crear cuenta',
+                      'FashionStore',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'FashionStore',
+                      'Iniciá sesión para continuar',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _nombreCtrl,
-                            textCapitalization: TextCapitalization.words,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombre',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) {
-                              final val = v?.trim() ?? '';
-                              if (val.length < 2) return 'Muy corto';
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _apellidoCtrl,
-                            textCapitalization: TextCapitalization.words,
-                            decoration: const InputDecoration(
-                              labelText: 'Apellido',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) {
-                              final val = v?.trim() ?? '';
-                              if (val.length < 2) return 'Muy corto';
-                              return null;
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
@@ -144,15 +95,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (!regex.hasMatch(val)) return 'Email inválido';
                         return null;
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _telefonoCtrl,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Teléfono (opcional)',
-                        border: OutlineInputBorder(),
-                      ),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -171,31 +113,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               setState(() => _verPassword = !_verPassword),
                         ),
                       ),
-                      validator: (v) {
-                        if ((v ?? '').length < 8) {
-                          return 'Mínimo 8 caracteres';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _confirmarCtrl,
-                      obscureText: !_verPassword,
-                      decoration: const InputDecoration(
-                        labelText: 'Confirmar contraseña',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) {
-                        if (v != _passwordCtrl.text) {
-                          return 'Las contraseñas no coinciden';
-                        }
-                        return null;
-                      },
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Requerido' : null,
+                      onFieldSubmitted: (_) => _ingresar(),
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
-                      onPressed: _enviando ? null : _registrar,
+                      onPressed: _enviando ? null : _ingresar,
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -208,20 +132,18 @@ class _RegisterPageState extends State<RegisterPage> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Crear cuenta'),
+                          : const Text('Ingresar'),
                     ),
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: _enviando
                           ? null
-                          : () => Navigator.of(context).canPop()
-                                ? Navigator.of(context).pop()
-                                : Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                      builder: (_) => const LoginPage(),
-                                    ),
-                                  ),
-                      child: const Text('¿Ya tenés cuenta? Iniciá sesión'),
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterPage(),
+                              ),
+                            ),
+                      child: const Text('¿No tenés cuenta? Creá una'),
                     ),
                   ],
                 ),

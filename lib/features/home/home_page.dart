@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_service.dart';
+import '../account/account_page.dart';
 
-/// Landing temporal tras el registro. Se irá ampliando con el catálogo (CU9+).
+/// Landing temporal tras iniciar sesión. Se irá ampliando con el catálogo (CU9+).
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -16,6 +17,13 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('FashionStore'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Mi cuenta',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AccountPage()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
