@@ -135,7 +135,12 @@ class _ReservarSheetState extends State<ReservarSheet> {
         left: 20,
         right: 20,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        // viewInsets = teclado; padding.bottom = barra de navegación del
+        // celular (gestos o los 3 botones) — hay que sumar ambos.
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            20,
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -157,6 +162,7 @@ class _ReservarSheetState extends State<ReservarSheet> {
             const SizedBox(height: 20),
             DropdownButtonFormField<int>(
               initialValue: _sucursalId,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Sucursal',
                 border: OutlineInputBorder(),
@@ -165,7 +171,10 @@ class _ReservarSheetState extends State<ReservarSheet> {
                   .map(
                     (s) => DropdownMenuItem(
                       value: s.sucursalId,
-                      child: Text('${s.sucursal} — ${s.ciudad}'),
+                      child: Text(
+                        '${s.sucursal} — ${s.ciudad}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   )
                   .toList(),
