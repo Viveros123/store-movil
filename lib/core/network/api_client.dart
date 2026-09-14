@@ -70,6 +70,13 @@ class ApiClient {
     return _decode(res);
   }
 
+  Future<dynamic> delete(String path, {bool auth = true}) async {
+    final res = await _wrap(
+      () => http.delete(_uri(path), headers: _headers(auth: auth)),
+    );
+    return _decode(res);
+  }
+
   Future<http.Response> _wrap(Future<http.Response> Function() call) async {
     try {
       return await call();

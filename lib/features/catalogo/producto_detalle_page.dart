@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/models/catalogo.dart';
+import '../../core/network/api_exception.dart';
+import '../carrito/carrito_page.dart';
+import '../carrito/carrito_service.dart';
 import '../reservas/reservar_sheet.dart';
 import '../reservas/reservas_service.dart';
 import 'tienda_service.dart';
 
-/// CU9 (detalle) + CU12 (disponibilidad) + CU16 (reservar).
-/// "Agregar al carrito" queda deshabilitado hasta CU21 en Flutter.
+/// CU9 (detalle) + CU12 (disponibilidad) + CU16 (reservar) + CU21 (carrito).
 class ProductoDetallePage extends StatefulWidget {
   final TiendaService tienda;
   final ReservasService reservas;
@@ -26,6 +29,7 @@ class ProductoDetallePage extends StatefulWidget {
 class _ProductoDetallePageState extends State<ProductoDetallePage> {
   bool _cargando = true;
   bool _noEncontrado = false;
+  bool _agregandoCarrito = false;
   CatalogoProductoDetalle? _producto;
 
   int? _colorSel;
@@ -154,6 +158,45 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
         ),
       );
       _cargarDisponibilidad();
+    }
+  }
+
+  Future<void> _agregarAlCarrito() async {
+    final variante = _varianteSeleccionada;
+    if (variante == null) return;
+
+    setState(() => _agregandoCarrito = true);
+    try {
+      await context.read<CarritoService>().agregar(
+        varianteId: variante.id,
+        cantidad: 1,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Se agregó al carrito.'),
+          action: SnackBarAction(
+            label: 'Ver carrito',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CarritoPage()),
+            ),
+          ),
+        ),
+      );
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo agregar al carrito.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _agregandoCarrito = false);
     }
   }
 
@@ -305,9 +348,20 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
               children: [
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: null,
-                    icon: const Icon(Icons.shopping_bag_outlined),
-                    label: const Text('Agregar al carrito (próximamente)'),
+                    onPressed: (variante == null || _agregandoCarrito)
+                        ? null
+                        : _agregarAlCarrito,
+                    icon: _agregandoCarrito
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.shopping_bag_outlined),
+                    label: const Text('Agregar al carrito'),
                   ),
                 ),
               ],
