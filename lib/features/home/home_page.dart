@@ -3,15 +3,17 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_service.dart';
 import '../account/account_page.dart';
+import '../catalogo/catalogo_page.dart';
+import '../catalogo/tienda_service.dart';
 
-/// Landing temporal tras iniciar sesión. Se irá ampliando con el catálogo (CU9+).
+/// Home autenticado: catálogo (CU9/CU10) como contenido principal,
+/// cuenta y logout accesibles desde el AppBar.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
-    final usuario = auth.usuario!;
 
     return Scaffold(
       appBar: AppBar(
@@ -31,21 +33,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              '¡Bienvenido, ${usuario.nombre}!',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(usuario.email),
-          ],
-        ),
-      ),
+      body: CatalogoPage(tienda: TiendaService(auth.api)),
     );
   }
 }

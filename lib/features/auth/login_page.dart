@@ -37,7 +37,11 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
       );
-      // El AuthGate en main.dart navega solo al detectar la sesión activa.
+      // El AuthGate reconstruye a HomePage por debajo; si esta pantalla
+      // llegó apilada (ej. tras volver de Registro), hay que revelarla.
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(

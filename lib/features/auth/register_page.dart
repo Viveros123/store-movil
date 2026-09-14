@@ -49,8 +49,12 @@ class _RegisterPageState extends State<RegisterPage> {
         password: _passwordCtrl.text,
         telefono: _telefonoCtrl.text.trim(),
       );
-      // La navegación al home la resuelve el AuthGate en main.dart
-      // al notificar el cambio de estado (estaAutenticado pasa a true).
+      // El AuthGate ya reconstruyó a HomePage por debajo, pero esta pantalla
+      // se apiló con Navigator.push encima de Login: hay que sacarla para
+      // que se vea.
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
