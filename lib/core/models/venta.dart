@@ -1,0 +1,121 @@
+/// Modelos de Venta/Pago (CU22/23/27/28), espejo de
+/// `app/modules/ventas/schemas.py`.
+library;
+
+double? _toDouble(dynamic v) {
+  if (v == null) return null;
+  if (v is num) return v.toDouble();
+  return double.tryParse(v.toString());
+}
+
+class ItemVenta {
+  final String? producto;
+  final String? talla;
+  final String? color;
+  final int cantidad;
+  final double precioUnitario;
+  final double subtotal;
+
+  ItemVenta({
+    required this.producto,
+    required this.talla,
+    required this.color,
+    required this.cantidad,
+    required this.precioUnitario,
+    required this.subtotal,
+  });
+
+  factory ItemVenta.fromJson(Map<String, dynamic> json) => ItemVenta(
+    producto: json['producto'] as String?,
+    talla: json['talla'] as String?,
+    color: json['color'] as String?,
+    cantidad: json['cantidad'] as int,
+    precioUnitario: _toDouble(json['precio_unitario']) ?? 0,
+    subtotal: _toDouble(json['subtotal']) ?? 0,
+  );
+}
+
+class Venta {
+  final int id;
+  final int sucursalId;
+  final String? sucursal;
+  final String? ciudad;
+  final String estado; // PENDIENTE_PAGO | PAGADA | COMPLETADA | ANULADA
+  final double total;
+  final String fechaCreacion;
+  final List<ItemVenta> items;
+
+  Venta({
+    required this.id,
+    required this.sucursalId,
+    required this.sucursal,
+    required this.ciudad,
+    required this.estado,
+    required this.total,
+    required this.fechaCreacion,
+    required this.items,
+  });
+
+  factory Venta.fromJson(Map<String, dynamic> json) => Venta(
+    id: json['id'] as int,
+    sucursalId: json['sucursal_id'] as int,
+    sucursal: json['sucursal'] as String?,
+    ciudad: json['ciudad'] as String?,
+    estado: json['estado'] as String,
+    total: _toDouble(json['total']) ?? 0,
+    fechaCreacion: json['fecha_creacion'] as String,
+    items: (json['items'] as List<dynamic>? ?? [])
+        .map((e) => ItemVenta.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
+}
+
+class Pago {
+  final int id;
+  final int ventaId;
+  final String metodo;
+  final String estado;
+  final double monto;
+  final String? checkoutUrl;
+  final String? qrDataUrl;
+
+  Pago({
+    required this.id,
+    required this.ventaId,
+    required this.metodo,
+    required this.estado,
+    required this.monto,
+    required this.checkoutUrl,
+    required this.qrDataUrl,
+  });
+
+  factory Pago.fromJson(Map<String, dynamic> json) => Pago(
+    id: json['id'] as int,
+    ventaId: json['venta_id'] as int,
+    metodo: json['metodo'] as String,
+    estado: json['estado'] as String,
+    monto: _toDouble(json['monto']) ?? 0,
+    checkoutUrl: json['checkout_url'] as String?,
+    qrDataUrl: json['qr_data_url'] as String?,
+  );
+}
+
+class EstadoPagoInfo {
+  final String ventaEstado;
+  final String? pagoEstado;
+
+  EstadoPagoInfo({required this.ventaEstado, required this.pagoEstado});
+
+  factory EstadoPagoInfo.fromJson(Map<String, dynamic> json) =>
+      EstadoPagoInfo(
+        ventaEstado: json['venta_estado'] as String,
+        pagoEstado: json['pago_estado'] as String?,
+      );
+}
+
+const etiquetaEstadoVenta = {
+  'PENDIENTE_PAGO': 'Pendiente de pago',
+  'PAGADA': 'Pagada',
+  'COMPLETADA': 'Completada',
+  'ANULADA': 'Anulada',
+};

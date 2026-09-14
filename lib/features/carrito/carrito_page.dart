@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../../core/models/carrito.dart';
 import '../../core/network/api_exception.dart';
+import '../sucursales/sucursales_service.dart';
+import '../ventas/checkout_page.dart';
+import '../ventas/ventas_service.dart';
 import 'carrito_service.dart';
 
 /// CU21 — Gestionar Carrito de Compras.
@@ -163,8 +167,22 @@ class _CarritoPageState extends State<CarritoPage> {
                         ),
                         const SizedBox(height: 12),
                         FilledButton(
-                          onPressed: null,
-                          child: const Text('Finalizar compra (próximamente)'),
+                          onPressed: hayNoDisponibles
+                              ? null
+                              : () {
+                                  final api = context
+                                      .read<AuthService>()
+                                      .api;
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => CheckoutPage(
+                                        ventas: VentasService(api),
+                                        sucursales: SucursalesService(api),
+                                      ),
+                                    ),
+                                  );
+                                },
+                          child: const Text('Finalizar compra'),
                         ),
                       ],
                     ),

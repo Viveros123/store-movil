@@ -9,9 +9,13 @@ import '../catalogo/catalogo_page.dart';
 import '../catalogo/tienda_service.dart';
 import '../reservas/mis_reservas_page.dart';
 import '../reservas/reservas_service.dart';
+import '../ventas/mis_compras_page.dart';
+import '../ventas/ventas_service.dart';
+
+enum _MenuCuenta { cuenta, reservas, compras, salir }
 
 /// Home autenticado: catálogo (CU9/CU10) como contenido principal,
-/// carrito, reservas, cuenta y logout accesibles desde el AppBar.
+/// carrito y menú de cuenta (reservas/compras/datos/logout) en el AppBar.
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -28,11 +32,40 @@ class _HomePageState extends State<HomePage> {
     context.read<CarritoService>().cargar().catchError((_) {});
   }
 
+  void _onMenu(_MenuCuenta opcion) {
+    final auth = context.read<AuthService>();
+    switch (opcion) {
+      case _MenuCuenta.cuenta:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AccountPage()));
+        break;
+      case _MenuCuenta.reservas:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                MisReservasPage(reservas: ReservasService(auth.api)),
+          ),
+        );
+        break;
+      case _MenuCuenta.compras:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MisComprasPage(ventas: VentasService(auth.api)),
+          ),
+        );
+        break;
+      case _MenuCuenta.salir:
+        context.read<CarritoService>().limpiarLocal();
+        auth.logout();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
     final cantidadCarrito = context.watch<CarritoService>().cantidadItems;
-    final reservasService = ReservasService(auth.api);
 
     return Scaffold(
       appBar: AppBar(
@@ -49,35 +82,47 @@ class _HomePageState extends State<HomePage> {
               context,
             ).push(MaterialPageRoute(builder: (_) => const CarritoPage())),
           ),
-          IconButton(
-            icon: const Icon(Icons.event_note_outlined),
-            tooltip: 'Mis reservas',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => MisReservasPage(reservas: reservasService),
-              ),
-            ),
-          ),
-          IconButton(
+          PopupMenuButton<_MenuCuenta>(
             icon: const Icon(Icons.person_outline),
             tooltip: 'Mi cuenta',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AccountPage()),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
-            onPressed: () {
-              context.read<CarritoService>().limpiarLocal();
-              context.read<AuthService>().logout();
-            },
+            onSelected: _onMenu,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _MenuCuenta.cuenta,
+                child: ListTile(
+                  leading: Icon(Icons.badge_outlined),
+                  title: Text('Mi cuenta'),
+                ),
+              ),
+              PopupMenuItem(
+                value: _MenuCuenta.reservas,
+                child: ListTile(
+                  leading: Icon(Icons.event_note_outlined),
+                  title: Text('Mis reservas'),
+                ),
+              ),
+              PopupMenuItem(
+                value: _MenuCuenta.compras,
+                child: ListTile(
+                  leading: Icon(Icons.receipt_long_outlined),
+                  title: Text('Mis compras'),
+                ),
+              ),
+              PopupMenuDivider(),
+              PopupMenuItem(
+                value: _MenuCuenta.salir,
+                child: ListTile(
+                  leading: Icon(Icons.logout),
+                  title: Text('Cerrar sesión'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
       body: CatalogoPage(
         tienda: TiendaService(auth.api),
-        reservas: reservasService,
+        reservas: ReservasService(auth.api),
       ),
     );
   }
