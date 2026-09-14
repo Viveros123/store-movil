@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/models/catalogo.dart';
+import '../reservas/reservas_service.dart';
 import 'producto_card.dart';
 import 'producto_detalle_page.dart';
 import 'tienda_service.dart';
@@ -18,8 +19,13 @@ const _opcionesOrden = {
 /// HomePage: el AppBar y la sesión los maneja la pantalla contenedora.
 class CatalogoPage extends StatefulWidget {
   final TiendaService tienda;
+  final ReservasService reservas;
 
-  const CatalogoPage({super.key, required this.tienda});
+  const CatalogoPage({
+    super.key,
+    required this.tienda,
+    required this.reservas,
+  });
 
   @override
   State<CatalogoPage> createState() => _CatalogoPageState();
@@ -415,6 +421,7 @@ class _CatalogoPageState extends State<CatalogoPage> {
             MaterialPageRoute(
               builder: (_) => ProductoDetallePage(
                 tienda: widget.tienda,
+                reservas: widget.reservas,
                 productoId: producto.id,
               ),
             ),

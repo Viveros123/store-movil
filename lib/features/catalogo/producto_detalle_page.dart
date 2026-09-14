@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/catalogo.dart';
+import '../reservas/reservar_sheet.dart';
+import '../reservas/reservas_service.dart';
 import 'tienda_service.dart';
 
-/// CU9 (detalle) + CU12 (disponibilidad por sucursal de la variante elegida).
-/// "Reservar"/"Comprar" quedan deshabilitados hasta CU16/CU21 en Flutter.
+/// CU9 (detalle) + CU12 (disponibilidad) + CU16 (reservar).
+/// "Agregar al carrito" queda deshabilitado hasta CU21 en Flutter.
 class ProductoDetallePage extends StatefulWidget {
   final TiendaService tienda;
+  final ReservasService reservas;
   final int productoId;
 
   const ProductoDetallePage({
     super.key,
     required this.tienda,
+    required this.reservas,
     required this.productoId,
   });
 
@@ -122,6 +126,35 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
   void _elegirTalla(int tallaId) {
     setState(() => _tallaSel = tallaId);
     _cargarDisponibilidad();
+  }
+
+  Future<void> _reservar() async {
+    final variante = _varianteSeleccionada;
+    if (variante == null || _disponibilidad.isEmpty || _producto == null) {
+      return;
+    }
+    final reserva = await showModalBottomSheet<Object?>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => ReservarSheet(
+        reservas: widget.reservas,
+        data: ReservarSheetData(
+          varianteId: variante.id,
+          productoNombre: _producto!.nombre,
+          talla: variante.talla,
+          color: variante.color,
+          sucursales: _disponibilidad,
+        ),
+      ),
+    );
+    if (reserva != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Reserva confirmada! La vas a ver en "Mis reservas".'),
+        ),
+      );
+      _cargarDisponibilidad();
+    }
   }
 
   @override
@@ -257,9 +290,12 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: null,
+                    onPressed:
+                        (variante != null && _disponibilidad.isNotEmpty)
+                        ? _reservar
+                        : null,
                     icon: const Icon(Icons.event_available_outlined),
-                    label: const Text('Reservar (próximamente)'),
+                    label: const Text('Reservar para probar'),
                   ),
                 ),
               ],

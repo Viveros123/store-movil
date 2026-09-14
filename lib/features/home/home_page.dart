@@ -5,20 +5,32 @@ import '../../core/auth/auth_service.dart';
 import '../account/account_page.dart';
 import '../catalogo/catalogo_page.dart';
 import '../catalogo/tienda_service.dart';
+import '../reservas/mis_reservas_page.dart';
+import '../reservas/reservas_service.dart';
 
 /// Home autenticado: catálogo (CU9/CU10) como contenido principal,
-/// cuenta y logout accesibles desde el AppBar.
+/// reservas, cuenta y logout accesibles desde el AppBar.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
+    final reservasService = ReservasService(auth.api);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('FashionStore'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.event_note_outlined),
+            tooltip: 'Mis reservas',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MisReservasPage(reservas: reservasService),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.person_outline),
             tooltip: 'Mi cuenta',
@@ -33,7 +45,10 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: CatalogoPage(tienda: TiendaService(auth.api)),
+      body: CatalogoPage(
+        tienda: TiendaService(auth.api),
+        reservas: reservasService,
+      ),
     );
   }
 }
