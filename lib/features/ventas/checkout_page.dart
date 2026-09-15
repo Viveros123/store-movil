@@ -30,7 +30,7 @@ class CheckoutPage extends StatefulWidget {
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
 
-class _CheckoutPageState extends State<CheckoutPage> {
+class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver {
   _Paso _paso = _Paso.sucursal;
   bool _cargando = true;
   bool _procesando = false;
@@ -41,9 +41,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Pago? _pago;
   String? _error;
 
+  // Se activan al volver de la pestaña de pago (Custom Tab), para mostrar
+  // la confirmación acá mismo en vez de dejar el QR como si nada hubiera
+  // pasado hasta que el cliente entre manualmente a "Mis compras".
+  bool _verificandoAlVolver = false;
+  bool _pagoConfirmado = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     widget.sucursales
         .opciones()
         .then((res) {
@@ -57,6 +64,46 @@ class _CheckoutPageState extends State<CheckoutPage> {
         .catchError((_) {
           if (mounted) setState(() => _cargando = false);
         });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    // Volvió del navegador (Custom Tab) donde fue a pagar: consultamos el
+    // estado real en vez de dejar el QR como si el pago no hubiera pasado.
+    if (_paso == _Paso.pago &&
+        _venta != null &&
+        !_pagoConfirmado &&
+        !_verificandoAlVolver) {
+      _verificarPagoAlVolver();
+    }
+  }
+
+  Future<void> _verificarPagoAlVolver() async {
+    final venta = _venta;
+    if (venta == null) return;
+
+    setState(() => _verificandoAlVolver = true);
+    try {
+      final info = await widget.ventas.estadoPago(venta.id);
+      if (!mounted) return;
+      if (info.ventaEstado == 'PAGADA' || info.ventaEstado == 'COMPLETADA') {
+        setState(() {
+          _pagoConfirmado = true;
+          _verificandoAlVolver = false;
+        });
+      } else {
+        setState(() => _verificandoAlVolver = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _verificandoAlVolver = false);
+    }
   }
 
   Future<void> _continuarAlPago() async {
@@ -154,6 +201,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       body: SafeArea(
         child: _cargando
             ? const Center(child: CircularProgressIndicator())
+            : _pagoConfirmado
+            ? _buildPagoConfirmado()
             : _paso == _Paso.sucursal
             ? _buildPasoSucursal(carrito?.total ?? 0)
             : _buildPasoPago(),
@@ -270,14 +319,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
             label: const Text('Ir a pagar con Stripe'),
           ),
           const SizedBox(height: 12),
-          Text(
-            'Cuando termines de pagar, volvé a la app y entrá a "Mis compras" '
-            'para confirmar el estado.',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
+          if (_verificandoAlVolver)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Verificando el pago…',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            )
+          else
+            Text(
+              'Al volver de pagar, la app revisa sola si se acreditó.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.outline,
+              ),
             ),
-          ),
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: _verMisCompras,
@@ -289,6 +354,45 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: const Text('Cancelar pedido'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPagoConfirmado() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: Theme.of(context).colorScheme.primary,
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '¡Pago confirmado!',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pedido #${_venta?.id} — Bs ${_pago?.monto.toStringAsFixed(2) ?? ''}',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(context).popUntil((r) => r.isFirst),
+              child: const Text('Volver al catálogo'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _verMisCompras,
+              child: const Text('Ver Mis compras'),
+            ),
+          ],
+        ),
       ),
     );
   }
