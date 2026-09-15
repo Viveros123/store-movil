@@ -7,12 +7,14 @@ import '../carrito/carrito_page.dart';
 import '../carrito/carrito_service.dart';
 import '../catalogo/catalogo_page.dart';
 import '../catalogo/tienda_service.dart';
+import '../ia/asistente_page.dart';
+import '../ia/ia_service.dart';
 import '../reservas/mis_reservas_page.dart';
 import '../reservas/reservas_service.dart';
 import '../ventas/mis_compras_page.dart';
 import '../ventas/ventas_service.dart';
 
-enum _MenuCuenta { cuenta, reservas, compras, salir }
+enum _MenuCuenta { cuenta, reservas, compras, asistente, salir }
 
 /// Home autenticado: catálogo (CU9/CU10) como contenido principal,
 /// carrito y menú de cuenta (reservas/compras/datos/logout) en el AppBar.
@@ -52,6 +54,13 @@ class _HomePageState extends State<HomePage> {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => MisComprasPage(ventas: VentasService(auth.api)),
+          ),
+        );
+        break;
+      case _MenuCuenta.asistente:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AsistentePage(ia: IaService(auth.api)),
           ),
         );
         break;
@@ -108,6 +117,13 @@ class _HomePageState extends State<HomePage> {
                   title: Text('Mis compras'),
                 ),
               ),
+              PopupMenuItem(
+                value: _MenuCuenta.asistente,
+                child: ListTile(
+                  leading: Icon(Icons.smart_toy_outlined),
+                  title: Text('Asistente virtual'),
+                ),
+              ),
               PopupMenuDivider(),
               PopupMenuItem(
                 value: _MenuCuenta.salir,
@@ -123,6 +139,7 @@ class _HomePageState extends State<HomePage> {
       body: CatalogoPage(
         tienda: TiendaService(auth.api),
         reservas: ReservasService(auth.api),
+        ia: IaService(auth.api),
       ),
     );
   }

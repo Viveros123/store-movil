@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/models/catalogo.dart';
+import '../../core/models/ia.dart';
+import '../ia/ia_service.dart';
+import '../ia/recomendacion_card.dart';
 import '../reservas/reservas_service.dart';
 import 'producto_card.dart';
 import 'producto_detalle_page.dart';
@@ -20,11 +23,13 @@ const _opcionesOrden = {
 class CatalogoPage extends StatefulWidget {
   final TiendaService tienda;
   final ReservasService reservas;
+  final IaService ia;
 
   const CatalogoPage({
     super.key,
     required this.tienda,
     required this.reservas,
+    required this.ia,
   });
 
   @override
@@ -57,6 +62,9 @@ class _CatalogoPageState extends State<CatalogoPage> {
   bool _cargando = true;
   bool _cargandoMas = false;
 
+  List<ProductoRecomendado> _recomendaciones = [];
+  bool _cargandoRecomendaciones = true;
+
   int get _filtrosActivos {
     var n = 0;
     if (_tallaId != null) n++;
@@ -78,6 +86,20 @@ class _CatalogoPageState extends State<CatalogoPage> {
     widget.tienda.colores().then((c) {
       if (mounted) setState(() => _colores = c);
     });
+    // CU29 — no bloquea el resto de la pantalla si falla.
+    widget.ia
+        .recomendaciones()
+        .then((r) {
+          if (mounted) {
+            setState(() {
+              _recomendaciones = r;
+              _cargandoRecomendaciones = false;
+            });
+          }
+        })
+        .catchError((_) {
+          if (mounted) setState(() => _cargandoRecomendaciones = false);
+        });
 
     _scrollCtrl.addListener(() {
       if (_scrollCtrl.position.pixels >
@@ -183,6 +205,8 @@ class _CatalogoPageState extends State<CatalogoPage> {
         controller: _scrollCtrl,
         slivers: [
           SliverToBoxAdapter(child: _buildBarraBusqueda(context)),
+          if (_cargandoRecomendaciones || _recomendaciones.isNotEmpty)
+            SliverToBoxAdapter(child: _buildRecomendaciones(context)),
           if (_categorias.isNotEmpty)
             SliverToBoxAdapter(child: _buildChipsCategoria(context)),
           if (_panelAbierto) SliverToBoxAdapter(child: _buildPanelFiltros()),
@@ -197,6 +221,59 @@ class _CatalogoPageState extends State<CatalogoPage> {
                 child: Center(child: CircularProgressIndicator()),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecomendaciones(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.auto_awesome,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Recomendado para vos',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 210,
+            child: _cargandoRecomendaciones
+                ? const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _recomendaciones.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, i) {
+                      final producto = _recomendaciones[i];
+                      return RecomendacionCard(
+                        producto: producto,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProductoDetallePage(
+                              tienda: widget.tienda,
+                              reservas: widget.reservas,
+                              productoId: producto.id,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
         ],
       ),
     );
