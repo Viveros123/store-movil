@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/models/ia.dart';
+import '../carrito/carrito_page.dart';
+import '../carrito/carrito_service.dart';
 import 'ia_service.dart';
 
 class _MensajeMostrado {
@@ -67,6 +70,22 @@ class _AsistentePageState extends State<AsistentePage> {
         );
         _enviando = false;
       });
+      // El chatbot puede agregar al carrito de verdad (CU30 + CU21):
+      // refrescamos el badge y ofrecemos ir a verlo.
+      if (res.carritoActualizado && mounted) {
+        context.read<CarritoService>().cargar().catchError((_) {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('El asistente agregó una prenda a tu carrito.'),
+            action: SnackBarAction(
+              label: 'Ver carrito',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CarritoPage()),
+              ),
+            ),
+          ),
+        );
+      }
     } catch (_) {
       if (mounted) {
         setState(() {

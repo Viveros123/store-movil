@@ -72,13 +72,19 @@ class ProductoMencionado {
 class ChatRespuesta {
   final String respuesta;
   final List<ProductoMencionado> productos;
+  final bool carritoActualizado;
 
-  ChatRespuesta({required this.respuesta, required this.productos});
+  ChatRespuesta({
+    required this.respuesta,
+    required this.productos,
+    required this.carritoActualizado,
+  });
 
   factory ChatRespuesta.fromJson(Map<String, dynamic> json) => ChatRespuesta(
     respuesta: json['respuesta'] as String,
     productos: (json['productos'] as List<dynamic>? ?? [])
         .map((e) => ProductoMencionado.fromJson(e as Map<String, dynamic>))
         .toList(),
+    carritoActualizado: json['carrito_actualizado'] as bool? ?? false,
   );
 }
