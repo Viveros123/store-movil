@@ -23,11 +23,13 @@ class RecomendacionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 1,
+            // Expanded (no AspectRatio fijo): la imagen cede espacio al
+            // texto del motivo en vez de desbordar la tarjeta.
+            Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
+                  width: double.infinity,
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: producto.imagenUrl == null
                       ? const Icon(Icons.checkroom, size: 32)
