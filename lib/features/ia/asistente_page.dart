@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/models/ia.dart';
+import '../../core/widgets/precio_promo.dart';
 import '../carrito/carrito_page.dart';
 import '../carrito/carrito_service.dart';
 import 'ia_service.dart';
@@ -239,8 +240,9 @@ class _AsistentePageState extends State<AsistentePage> {
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
-                              Text(
-                                'Bs ${p.precioBase.toStringAsFixed(2)}',
+                              PrecioPromo(
+                                precio: p.precioBase,
+                                precioPromocional: p.precioPromocional,
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               ),

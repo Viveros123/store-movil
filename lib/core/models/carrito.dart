@@ -15,6 +15,9 @@ class ItemCarrito {
   final String? color;
   final String? imagenEfectivo;
   final double? precioUnitario;
+  // CU33: precio sin descuento y nombre de la promoción aplicada, si hay.
+  final double? precioOriginal;
+  final String? promocion;
   final int cantidad;
   final double? subtotal;
   final bool disponible;
@@ -27,6 +30,8 @@ class ItemCarrito {
     required this.color,
     required this.imagenEfectivo,
     required this.precioUnitario,
+    this.precioOriginal,
+    this.promocion,
     required this.cantidad,
     required this.subtotal,
     required this.disponible,
@@ -40,6 +45,8 @@ class ItemCarrito {
     color: json['color'] as String?,
     imagenEfectivo: json['imagen_efectivo'] as String?,
     precioUnitario: _toDouble(json['precio_unitario']),
+    precioOriginal: _toDouble(json['precio_original']),
+    promocion: json['promocion'] as String?,
     cantidad: json['cantidad'] as int,
     subtotal: _toDouble(json['subtotal']),
     disponible: json['disponible'] as bool,

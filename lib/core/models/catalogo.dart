@@ -54,6 +54,9 @@ class CatalogoProducto {
   final String? coleccion;
   final String? temporada;
   final double precioBase;
+  // CU33: precio con la mejor promoción vigente (null si no hay ninguna).
+  final double? precioPromocional;
+  final String? promocion;
   final String? imagenUrl;
   final List<ColorCatalogo> colores;
   final int cantidadVariantes;
@@ -66,6 +69,8 @@ class CatalogoProducto {
     required this.coleccion,
     required this.temporada,
     required this.precioBase,
+    this.precioPromocional,
+    this.promocion,
     required this.imagenUrl,
     required this.colores,
     required this.cantidadVariantes,
@@ -80,6 +85,8 @@ class CatalogoProducto {
         coleccion: json['coleccion'] as String?,
         temporada: json['temporada'] as String?,
         precioBase: _toDouble(json['precio_base']) ?? 0,
+        precioPromocional: _toDouble(json['precio_promocional']),
+        promocion: json['promocion'] as String?,
         imagenUrl: json['imagen_url'] as String?,
         colores: (json['colores'] as List<dynamic>? ?? [])
             .map((e) => ColorCatalogo.fromJson(e as Map<String, dynamic>))
@@ -96,6 +103,7 @@ class CatalogoVariante {
   final String? color;
   final String? colorHex;
   final double precioEfectivo;
+  final double? precioPromocional;
   final String? imagenEfectivo;
 
   CatalogoVariante({
@@ -106,6 +114,7 @@ class CatalogoVariante {
     required this.color,
     required this.colorHex,
     required this.precioEfectivo,
+    this.precioPromocional,
     required this.imagenEfectivo,
   });
 
@@ -118,6 +127,7 @@ class CatalogoVariante {
         color: json['color'] as String?,
         colorHex: json['color_hex'] as String?,
         precioEfectivo: _toDouble(json['precio_efectivo']) ?? 0,
+        precioPromocional: _toDouble(json['precio_promocional']),
         imagenEfectivo: json['imagen_efectivo'] as String?,
       );
 }
@@ -133,6 +143,8 @@ class CatalogoProductoDetalle extends CatalogoProducto {
     required super.coleccion,
     required super.temporada,
     required super.precioBase,
+    super.precioPromocional,
+    super.promocion,
     required super.imagenUrl,
     required super.colores,
     required super.cantidadVariantes,
@@ -149,6 +161,8 @@ class CatalogoProductoDetalle extends CatalogoProducto {
       coleccion: base.coleccion,
       temporada: base.temporada,
       precioBase: base.precioBase,
+      precioPromocional: base.precioPromocional,
+      promocion: base.promocion,
       imagenUrl: base.imagenUrl,
       colores: base.colores,
       cantidadVariantes: base.cantidadVariantes,

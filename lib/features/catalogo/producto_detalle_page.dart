@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/models/catalogo.dart';
 import '../../core/network/api_exception.dart';
+import '../../core/widgets/precio_promo.dart';
 import '../carrito/carrito_page.dart';
 import '../carrito/carrito_service.dart';
 import '../reservas/reservar_sheet.dart';
@@ -216,6 +217,9 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
     final variante = _varianteSeleccionada;
     final imagen = variante?.imagenEfectivo ?? producto.imagenUrl;
     final precio = variante?.precioEfectivo ?? producto.precioBase;
+    final precioPromo = variante != null
+        ? variante.precioPromocional
+        : producto.precioPromocional;
 
     return Scaffold(
       appBar: AppBar(title: Text(producto.nombre)),
@@ -257,12 +261,20 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
               ),
             ],
             const SizedBox(height: 8),
-            Text(
-              'Bs ${precio.toStringAsFixed(2)}',
+            PrecioPromo(
+              precio: precio,
+              precioPromocional: precioPromo,
               style: Theme.of(
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
+            if (precioPromo != null && producto.promocion != null) ...[
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: EtiquetaOferta(producto.promocion!),
+              ),
+            ],
             if (producto.descripcion != null &&
                 producto.descripcion!.trim().isNotEmpty) ...[
               const SizedBox(height: 12),

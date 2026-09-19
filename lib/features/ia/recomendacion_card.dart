@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/ia.dart';
+import '../../core/widgets/precio_promo.dart';
 
 /// CU29 — tarjeta de producto recomendado, con el "motivo" que dio la IA.
 class RecomendacionCard extends StatelessWidget {
@@ -49,8 +50,9 @@ class RecomendacionCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            Text(
-              'Bs ${producto.precioBase.toStringAsFixed(2)}',
+            PrecioPromo(
+              precio: producto.precioBase,
+              precioPromocional: producto.precioPromocional,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),

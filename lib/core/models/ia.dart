@@ -13,6 +13,7 @@ class ProductoRecomendado {
   final String? categoria;
   final String? temporada;
   final double precioBase;
+  final double? precioPromocional;
   final String? imagenUrl;
   final String motivo;
 
@@ -22,6 +23,7 @@ class ProductoRecomendado {
     required this.categoria,
     required this.temporada,
     required this.precioBase,
+    this.precioPromocional,
     required this.imagenUrl,
     required this.motivo,
   });
@@ -33,6 +35,7 @@ class ProductoRecomendado {
         categoria: json['categoria'] as String?,
         temporada: json['temporada'] as String?,
         precioBase: _toDouble(json['precio_base']) ?? 0,
+        precioPromocional: _toDouble(json['precio_promocional']),
         imagenUrl: json['imagen_url'] as String?,
         motivo: json['motivo'] as String,
       );
@@ -51,12 +54,14 @@ class ProductoMencionado {
   final int id;
   final String nombre;
   final double precioBase;
+  final double? precioPromocional;
   final String? imagenUrl;
 
   ProductoMencionado({
     required this.id,
     required this.nombre,
     required this.precioBase,
+    this.precioPromocional,
     required this.imagenUrl,
   });
 
@@ -65,6 +70,7 @@ class ProductoMencionado {
         id: json['id'] as int,
         nombre: json['nombre'] as String,
         precioBase: _toDouble(json['precio_base']) ?? 0,
+        precioPromocional: _toDouble(json['precio_promocional']),
         imagenUrl: json['imagen_url'] as String?,
       );
 }

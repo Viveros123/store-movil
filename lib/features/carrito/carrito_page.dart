@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/auth/auth_service.dart';
 import '../../core/models/carrito.dart';
 import '../../core/network/api_exception.dart';
+import '../../core/widgets/precio_promo.dart';
 import '../sucursales/sucursales_service.dart';
 import '../ventas/checkout_page.dart';
 import '../ventas/ventas_service.dart';
@@ -263,6 +264,22 @@ class _TarjetaItem extends StatelessWidget {
                     const Text(
                       'Sin stock',
                       style: TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  if (item.promocion != null && item.precioOriginal != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Wrap(
+                        spacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          PrecioPromo(
+                            precio: item.precioOriginal!,
+                            precioPromocional: item.precioUnitario,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          EtiquetaOferta(item.promocion!),
+                        ],
+                      ),
                     ),
                   const SizedBox(height: 6),
                   Row(

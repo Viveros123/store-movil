@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/catalogo.dart';
+import '../../core/widgets/precio_promo.dart';
 
 /// Tarjeta de producto para la grilla del catálogo (CU9).
 class ProductoCard extends StatelessWidget {
@@ -51,8 +52,9 @@ class ProductoCard extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 4),
-          Text(
-            'Bs ${producto.precioBase.toStringAsFixed(2)}',
+          PrecioPromo(
+            precio: producto.precioBase,
+            precioPromocional: producto.precioPromocional,
             style: Theme.of(
               context,
             ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
