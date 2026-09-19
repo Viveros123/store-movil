@@ -217,7 +217,7 @@ class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Elegí la sucursal donde vas a retirar tu compra',
+            'Elegí la sucursal desde la que despachamos tu compra',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -225,7 +225,7 @@ class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver
             initialValue: _sucursalId,
             isExpanded: true,
             decoration: const InputDecoration(
-              labelText: 'Sucursal de retiro',
+              labelText: 'Sucursal de despacho',
               border: OutlineInputBorder(),
             ),
             items: _sucursalesOpciones
