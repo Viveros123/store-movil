@@ -5,38 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/models/sucursal.dart';
 import '../../core/models/venta.dart';
 import '../../core/network/api_exception.dart';
 import '../carrito/carrito_service.dart';
-import '../sucursales/sucursales_service.dart';
 import 'mis_compras_page.dart';
 import 'ventas_service.dart';
 
-enum _Paso { sucursal, pago }
+enum _Paso { entrega, pago }
 
 /// CU22/CU23 — Comprar desde la app (checkout + pago Stripe/QR).
 class CheckoutPage extends StatefulWidget {
   final VentasService ventas;
-  final SucursalesService sucursales;
 
-  const CheckoutPage({
-    super.key,
-    required this.ventas,
-    required this.sucursales,
-  });
+  const CheckoutPage({super.key, required this.ventas});
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
 
 class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver {
-  _Paso _paso = _Paso.sucursal;
-  bool _cargando = true;
+  _Paso _paso = _Paso.entrega;
   bool _procesando = false;
 
-  List<SucursalOpcion> _sucursalesOpciones = [];
-  int? _sucursalId;
+  final _direccionCtrl = TextEditingController();
+  final _referenciaCtrl = TextEditingController();
   Venta? _venta;
   Pago? _pago;
   String? _error;
@@ -51,24 +43,13 @@ class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    widget.sucursales
-        .opciones()
-        .then((res) {
-          if (!mounted) return;
-          setState(() {
-            _sucursalesOpciones = res;
-            _sucursalId = res.isNotEmpty ? res.first.id : null;
-            _cargando = false;
-          });
-        })
-        .catchError((_) {
-          if (mounted) setState(() => _cargando = false);
-        });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _direccionCtrl.dispose();
+    _referenciaCtrl.dispose();
     super.dispose();
   }
 
@@ -107,15 +88,23 @@ class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver
   }
 
   Future<void> _continuarAlPago() async {
-    final sucursalId = _sucursalId;
-    if (sucursalId == null || _procesando) return;
+    if (_procesando) return;
+    final direccion = _direccionCtrl.text.trim();
+    if (direccion.length < 5) {
+      setState(() => _error = 'Ingresá una dirección de entrega (mínimo 5 caracteres).');
+      return;
+    }
+    final referencia = _referenciaCtrl.text.trim();
 
     setState(() {
       _procesando = true;
       _error = null;
     });
     try {
-      final venta = await widget.ventas.checkout(sucursalId);
+      final venta = await widget.ventas.checkout(
+        direccion,
+        referencia.isEmpty ? null : referencia,
+      );
       _venta = venta;
       if (mounted) {
         context.read<CarritoService>().cargar().catchError((_) {});
@@ -199,49 +188,54 @@ class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver
     return Scaffold(
       appBar: AppBar(title: const Text('Comprar')),
       body: SafeArea(
-        child: _cargando
-            ? const Center(child: CircularProgressIndicator())
-            : _pagoConfirmado
+        child: _pagoConfirmado
             ? _buildPagoConfirmado()
-            : _paso == _Paso.sucursal
-            ? _buildPasoSucursal(carrito?.total ?? 0)
+            : _paso == _Paso.entrega
+            ? _buildPasoEntrega(carrito?.total ?? 0)
             : _buildPasoPago(),
       ),
     );
   }
 
-  Widget _buildPasoSucursal(double total) {
-    return Padding(
+  Widget _buildPasoEntrega(double total) {
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Elegí la sucursal desde la que despachamos tu compra',
+            '¿A dónde enviamos tu pedido?',
             style: Theme.of(context).textTheme.titleMedium,
           ),
+          const SizedBox(height: 6),
+          Text(
+            'Pagás online y te lo enviamos. Despachamos desde la sucursal '
+            '(o sucursales) que tengan stock de tus prendas.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            initialValue: _sucursalId,
-            isExpanded: true,
+          TextField(
+            controller: _direccionCtrl,
+            maxLength: 200,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
-              labelText: 'Sucursal de despacho',
+              labelText: 'Dirección de entrega',
+              hintText: 'Calle, número, zona y ciudad',
               border: OutlineInputBorder(),
             ),
-            items: _sucursalesOpciones
-                .map(
-                  (s) => DropdownMenuItem(
-                    value: s.id,
-                    child: Text(
-                      '${s.nombre} — ${s.ciudad}',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                )
-                .toList(),
-            onChanged: (v) => setState(() => _sucursalId = v),
           ),
-          const Spacer(),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _referenciaCtrl,
+            maxLength: 150,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(
+              labelText: 'Referencia (opcional)',
+              hintText: 'Ej.: portón azul, frente a la farmacia',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -263,9 +257,7 @@ class _CheckoutPageState extends State<CheckoutPage> with WidgetsBindingObserver
           ],
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: (_sucursalId == null || _procesando)
-                ? null
-                : _continuarAlPago,
+            onPressed: _procesando ? null : _continuarAlPago,
             child: _procesando
                 ? const SizedBox(
                     height: 20,

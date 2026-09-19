@@ -51,18 +51,7 @@ class _MisComprasPageState extends State<MisComprasPage> {
         if (info.ventaEstado == venta.estado) continue;
         setState(() {
           _ventas = _ventas
-              .map((v) => v.id == venta.id
-                  ? Venta(
-                      id: v.id,
-                      sucursalId: v.sucursalId,
-                      sucursal: v.sucursal,
-                      ciudad: v.ciudad,
-                      estado: info.ventaEstado,
-                      total: v.total,
-                      fechaCreacion: v.fechaCreacion,
-                      items: v.items,
-                    )
-                  : v)
+              .map((v) => v.id == venta.id ? v.copyWithEstado(info.ventaEstado) : v)
               .toList();
         });
       } catch (_) {
@@ -209,13 +198,24 @@ class _TarjetaVenta extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            Text('${venta.sucursal} — ${venta.ciudad}'),
+            Text(
+              'Despacho desde ${venta.sucursal}'
+              '${venta.ciudad != null ? ' — ${venta.ciudad}' : ''}',
+            ),
+            if (venta.direccionEntrega != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                'Entrega en ${venta.direccionEntrega}'
+                '${venta.referenciaEntrega != null ? ' (${venta.referenciaEntrega})' : ''}',
+              ),
+            ],
             const SizedBox(height: 8),
             ...venta.items.map(
               (item) => Padding(
                 padding: const EdgeInsets.only(top: 2),
                 child: Text(
-                  '${item.producto ?? ''} · ${item.talla ?? ''}/${item.color ?? ''} × ${item.cantidad}',
+                  '${item.producto ?? ''} · ${item.talla ?? ''}/${item.color ?? ''} × ${item.cantidad}'
+                  '${venta.variasSucursales ? ' — desde ${item.sucursal}' : ''}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),

@@ -7,10 +7,10 @@ class VentasService {
 
   VentasService(this._api);
 
-  Future<Venta> checkout(int sucursalId) async {
+  Future<Venta> checkout(String direccion, String? referencia) async {
     final data = await _api.post(
       '/ventas/checkout',
-      body: {'sucursal_id': sucursalId},
+      body: {'direccion_entrega': direccion, 'referencia_entrega': referencia},
     );
     return Venta.fromJson(data as Map<String, dynamic>);
   }

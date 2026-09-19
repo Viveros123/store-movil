@@ -15,6 +15,8 @@ class ItemVenta {
   final int cantidad;
   final double precioUnitario;
   final double subtotal;
+  // Sucursal de la que sale esta prenda (una compra puede salir de varias).
+  final String? sucursal;
 
   ItemVenta({
     required this.producto,
@@ -23,6 +25,7 @@ class ItemVenta {
     required this.cantidad,
     required this.precioUnitario,
     required this.subtotal,
+    this.sucursal,
   });
 
   factory ItemVenta.fromJson(Map<String, dynamic> json) => ItemVenta(
@@ -32,6 +35,7 @@ class ItemVenta {
     cantidad: json['cantidad'] as int,
     precioUnitario: _toDouble(json['precio_unitario']) ?? 0,
     subtotal: _toDouble(json['subtotal']) ?? 0,
+    sucursal: json['sucursal'] as String?,
   );
 }
 
@@ -40,6 +44,11 @@ class Venta {
   final int sucursalId;
   final String? sucursal;
   final String? ciudad;
+  // true si la compra sale de más de una sucursal ("Varias sucursales").
+  final bool variasSucursales;
+  // Solo compras en línea: a dónde se envía (el delivery es externo).
+  final String? direccionEntrega;
+  final String? referenciaEntrega;
   final String estado; // PENDIENTE_PAGO | PAGADA | COMPLETADA | ANULADA
   final double total;
   final String fechaCreacion;
@@ -50,6 +59,9 @@ class Venta {
     required this.sucursalId,
     required this.sucursal,
     required this.ciudad,
+    this.variasSucursales = false,
+    this.direccionEntrega,
+    this.referenciaEntrega,
     required this.estado,
     required this.total,
     required this.fechaCreacion,
@@ -61,12 +73,29 @@ class Venta {
     sucursalId: json['sucursal_id'] as int,
     sucursal: json['sucursal'] as String?,
     ciudad: json['ciudad'] as String?,
+    variasSucursales: json['varias_sucursales'] as bool? ?? false,
+    direccionEntrega: json['direccion_entrega'] as String?,
+    referenciaEntrega: json['referencia_entrega'] as String?,
     estado: json['estado'] as String,
     total: _toDouble(json['total']) ?? 0,
     fechaCreacion: json['fecha_creacion'] as String,
     items: (json['items'] as List<dynamic>? ?? [])
         .map((e) => ItemVenta.fromJson(e as Map<String, dynamic>))
         .toList(),
+  );
+
+  Venta copyWithEstado(String nuevoEstado) => Venta(
+    id: id,
+    sucursalId: sucursalId,
+    sucursal: sucursal,
+    ciudad: ciudad,
+    variasSucursales: variasSucursales,
+    direccionEntrega: direccionEntrega,
+    referenciaEntrega: referenciaEntrega,
+    estado: nuevoEstado,
+    total: total,
+    fechaCreacion: fechaCreacion,
+    items: items,
   );
 }
 

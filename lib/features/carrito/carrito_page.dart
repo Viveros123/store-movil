@@ -5,7 +5,6 @@ import '../../core/auth/auth_service.dart';
 import '../../core/models/carrito.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/widgets/precio_promo.dart';
-import '../sucursales/sucursales_service.dart';
 import '../ventas/checkout_page.dart';
 import '../ventas/ventas_service.dart';
 import 'carrito_service.dart';
@@ -176,10 +175,8 @@ class _CarritoPageState extends State<CarritoPage> {
                                       .api;
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (_) => CheckoutPage(
-                                        ventas: VentasService(api),
-                                        sucursales: SucursalesService(api),
-                                      ),
+                                      builder: (_) =>
+                                          CheckoutPage(ventas: VentasService(api)),
                                     ),
                                   );
                                 },
