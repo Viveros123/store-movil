@@ -228,6 +228,7 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
     final precioPromo = variante != null
         ? variante.precioPromocional
         : producto.precioPromocional;
+    final etiquetaPromo = variante != null ? variante.promocion : producto.promocion;
 
     return Scaffold(
       appBar: AppBar(title: Text(producto.nombre)),
@@ -276,11 +277,11 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
-            if (precioPromo != null && producto.promocion != null) ...[
+            if (precioPromo != null && etiquetaPromo != null) ...[
               const SizedBox(height: 6),
               Align(
                 alignment: Alignment.centerLeft,
-                child: EtiquetaOferta(producto.promocion!),
+                child: EtiquetaOferta(etiquetaPromo),
               ),
             ],
             if (producto.descripcion != null &&

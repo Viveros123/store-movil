@@ -104,6 +104,8 @@ class CatalogoVariante {
   final String? colorHex;
   final double precioEfectivo;
   final double? precioPromocional;
+  // Nombre de la promoción que aplica a esta variante puntual.
+  final String? promocion;
   final String? imagenEfectivo;
 
   CatalogoVariante({
@@ -115,6 +117,7 @@ class CatalogoVariante {
     required this.colorHex,
     required this.precioEfectivo,
     this.precioPromocional,
+    this.promocion,
     required this.imagenEfectivo,
   });
 
@@ -128,6 +131,7 @@ class CatalogoVariante {
         colorHex: json['color_hex'] as String?,
         precioEfectivo: _toDouble(json['precio_efectivo']) ?? 0,
         precioPromocional: _toDouble(json['precio_promocional']),
+        promocion: json['promocion'] as String?,
         imagenEfectivo: json['imagen_efectivo'] as String?,
       );
 }
