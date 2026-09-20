@@ -46,6 +46,8 @@ class Venta {
   final String? ciudad;
   // true si la compra sale de más de una sucursal ("Varias sucursales").
   final bool variasSucursales;
+  // Si la compra nació de una reserva: se cobra en caja, no en línea.
+  final int? reservaId;
   // Solo compras en línea: a dónde se envía (el delivery es externo).
   final String? direccionEntrega;
   final String? referenciaEntrega;
@@ -60,6 +62,7 @@ class Venta {
     required this.sucursal,
     required this.ciudad,
     this.variasSucursales = false,
+    this.reservaId,
     this.direccionEntrega,
     this.referenciaEntrega,
     required this.estado,
@@ -74,6 +77,7 @@ class Venta {
     sucursal: json['sucursal'] as String?,
     ciudad: json['ciudad'] as String?,
     variasSucursales: json['varias_sucursales'] as bool? ?? false,
+    reservaId: json['reserva_id'] as int?,
     direccionEntrega: json['direccion_entrega'] as String?,
     referenciaEntrega: json['referencia_entrega'] as String?,
     estado: json['estado'] as String,
@@ -90,6 +94,7 @@ class Venta {
     sucursal: sucursal,
     ciudad: ciudad,
     variasSucursales: variasSucursales,
+    reservaId: reservaId,
     direccionEntrega: direccionEntrega,
     referenciaEntrega: referenciaEntrega,
     estado: nuevoEstado,

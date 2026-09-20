@@ -199,7 +199,7 @@ class _TarjetaVenta extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Despacho desde ${venta.sucursal}'
+              '${venta.direccionEntrega != null ? 'Despacho desde' : 'Compra en'} ${venta.sucursal}'
               '${venta.ciudad != null ? ' — ${venta.ciudad}' : ''}',
             ),
             if (venta.direccionEntrega != null) ...[
@@ -227,7 +227,13 @@ class _TarjetaVenta extends StatelessWidget {
                 context,
               ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
-            if (venta.estado == 'PENDIENTE_PAGO') ...[
+            if (venta.estado == 'PENDIENTE_PAGO' && venta.reservaId != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Se cobra en caja',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ] else if (venta.estado == 'PENDIENTE_PAGO') ...[
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
