@@ -6,7 +6,8 @@ import '../../core/network/api_exception.dart';
 import '../../core/widgets/precio_promo.dart';
 import '../carrito/carrito_page.dart';
 import '../carrito/carrito_service.dart';
-import '../reservas/reservar_sheet.dart';
+import '../reservas/agregar_reserva_sheet.dart';
+import '../reservas/mi_reserva_page.dart';
 import '../reservas/reservas_service.dart';
 import 'tienda_service.dart';
 
@@ -133,32 +134,39 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
     _cargarDisponibilidad();
   }
 
-  Future<void> _reservar() async {
+  Future<void> _agregarAReserva() async {
     final variante = _varianteSeleccionada;
     if (variante == null || _disponibilidad.isEmpty || _producto == null) {
       return;
     }
-    final reserva = await showModalBottomSheet<Object?>(
+    final agregada = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => ReservarSheet(
-        reservas: widget.reservas,
-        data: ReservarSheetData(
+      builder: (_) => AgregarReservaSheet(
+        data: AgregarReservaData(
           varianteId: variante.id,
           productoNombre: _producto!.nombre,
           talla: variante.talla,
           color: variante.color,
+          imagenUrl: variante.imagenEfectivo ?? _producto!.imagenUrl,
           sucursales: _disponibilidad,
         ),
       ),
     );
-    if (reserva != null && mounted) {
+    if (agregada == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Reserva confirmada! La vas a ver en "Mis reservas".'),
+        SnackBar(
+          content: const Text('Agregada a tu reserva.'),
+          action: SnackBarAction(
+            label: 'Ver mi reserva',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MiReservaPage(reservas: widget.reservas),
+              ),
+            ),
+          ),
         ),
       );
-      _cargarDisponibilidad();
     }
   }
 
@@ -347,10 +355,10 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
                   child: OutlinedButton.icon(
                     onPressed:
                         (variante != null && _disponibilidad.isNotEmpty)
-                        ? _reservar
+                        ? _agregarAReserva
                         : null,
                     icon: const Icon(Icons.event_available_outlined),
-                    label: const Text('Reservar para probar'),
+                    label: const Text('Agregar a mi reserva'),
                   ),
                 ),
               ],

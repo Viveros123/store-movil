@@ -9,12 +9,14 @@ import '../catalogo/catalogo_page.dart';
 import '../catalogo/tienda_service.dart';
 import '../ia/asistente_page.dart';
 import '../ia/ia_service.dart';
+import '../reservas/mi_reserva_page.dart';
 import '../reservas/mis_reservas_page.dart';
+import '../reservas/reserva_bolsa_service.dart';
 import '../reservas/reservas_service.dart';
 import '../ventas/mis_compras_page.dart';
 import '../ventas/ventas_service.dart';
 
-enum _MenuCuenta { cuenta, reservas, compras, asistente, salir }
+enum _MenuCuenta { cuenta, miReserva, reservas, compras, asistente, salir }
 
 /// Home autenticado: catálogo (CU9/CU10) como contenido principal,
 /// carrito y menú de cuenta (reservas/compras/datos/logout) en el AppBar.
@@ -42,6 +44,13 @@ class _HomePageState extends State<HomePage> {
           context,
         ).push(MaterialPageRoute(builder: (_) => const AccountPage()));
         break;
+      case _MenuCuenta.miReserva:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MiReservaPage(reservas: ReservasService(auth.api)),
+          ),
+        );
+        break;
       case _MenuCuenta.reservas:
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -66,6 +75,7 @@ class _HomePageState extends State<HomePage> {
         break;
       case _MenuCuenta.salir:
         context.read<CarritoService>().limpiarLocal();
+        context.read<ReservaBolsaService>().limpiar();
         auth.logout();
         break;
     }
@@ -75,6 +85,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
     final cantidadCarrito = context.watch<CarritoService>().cantidadItems;
+    final cantidadReserva = context.watch<ReservaBolsaService>().cantidad;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,8 +106,8 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.person_outline),
             tooltip: 'Mi cuenta',
             onSelected: _onMenu,
-            itemBuilder: (context) => const [
-              PopupMenuItem(
+            itemBuilder: (context) => [
+              const PopupMenuItem(
                 value: _MenuCuenta.cuenta,
                 child: ListTile(
                   leading: Icon(Icons.badge_outlined),
@@ -104,28 +115,39 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               PopupMenuItem(
+                value: _MenuCuenta.miReserva,
+                child: ListTile(
+                  leading: const Icon(Icons.event_available_outlined),
+                  title: Text(
+                    cantidadReserva > 0
+                        ? 'Mi reserva ($cantidadReserva)'
+                        : 'Mi reserva',
+                  ),
+                ),
+              ),
+              const PopupMenuItem(
                 value: _MenuCuenta.reservas,
                 child: ListTile(
                   leading: Icon(Icons.event_note_outlined),
                   title: Text('Mis reservas'),
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: _MenuCuenta.compras,
                 child: ListTile(
                   leading: Icon(Icons.receipt_long_outlined),
                   title: Text('Mis compras'),
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: _MenuCuenta.asistente,
                 child: ListTile(
                   leading: Icon(Icons.smart_toy_outlined),
                   title: Text('Asistente virtual'),
                 ),
               ),
-              PopupMenuDivider(),
-              PopupMenuItem(
+              const PopupMenuDivider(),
+              const PopupMenuItem(
                 value: _MenuCuenta.salir,
                 child: ListTile(
                   leading: Icon(Icons.logout),

@@ -1,6 +1,14 @@
 import '../../core/models/reserva.dart';
 import '../../core/network/api_client.dart';
 
+/// Una prenda (variante) con su cantidad dentro de una reserva.
+class ItemReservaNueva {
+  final int varianteId;
+  final int cantidad;
+
+  ItemReservaNueva({required this.varianteId, required this.cantidad});
+}
+
 /// CU16 (reservar) / CU17 (consultar y cancelar) — requiere sesión de Cliente.
 class ReservasService {
   final ApiClient _api;
@@ -28,8 +36,7 @@ class ReservasService {
     required String fechaIso,
     required String horaInicio, // "HH:MM"
     required int duracionMinutos,
-    required int varianteId,
-    required int cantidad,
+    required List<ItemReservaNueva> items,
   }) async {
     final data = await _api.post(
       '/reservas',
@@ -38,9 +45,9 @@ class ReservasService {
         'fecha': fechaIso,
         'hora_inicio': horaInicio,
         'duracion_minutos': duracionMinutos,
-        'items': [
-          {'variante_id': varianteId, 'cantidad': cantidad},
-        ],
+        'items': items
+            .map((i) => {'variante_id': i.varianteId, 'cantidad': i.cantidad})
+            .toList(),
       },
     );
     return Reserva.fromJson(data as Map<String, dynamic>);

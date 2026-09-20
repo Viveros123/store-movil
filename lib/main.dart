@@ -5,6 +5,7 @@ import 'core/auth/auth_service.dart';
 import 'features/auth/login_page.dart';
 import 'features/carrito/carrito_service.dart';
 import 'features/home/home_page.dart';
+import 'features/reservas/reserva_bolsa_service.dart';
 
 void main() {
   runApp(const FashionStoreApp());
@@ -20,6 +21,7 @@ class FashionStoreApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthService()..cargarSesion()),
         // Se crea una sola vez con el ApiClient de AuthService (mismo token)
         // y sobrevive mientras dure la app, como el carrito real.
+        ChangeNotifierProvider(create: (_) => ReservaBolsaService()),
         ChangeNotifierProxyProvider<AuthService, CarritoService>(
           create: (context) => CarritoService(context.read<AuthService>().api),
           update: (context, auth, previo) => previo ?? CarritoService(auth.api),
