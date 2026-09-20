@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/models/venta.dart';
+import '../../core/widgets/precio_promo.dart';
 import 'ventas_service.dart';
 
 /// CU22/CU28 — Mis compras: historial + confirma pagos pendientes al abrir
@@ -213,13 +214,41 @@ class _TarjetaVenta extends StatelessWidget {
             ...venta.items.map(
               (item) => Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  '${item.producto ?? ''} · ${item.talla ?? ''}/${item.color ?? ''} × ${item.cantidad}'
-                  '${venta.variasSucursales ? ' — desde ${item.sucursal}' : ''}',
-                  style: Theme.of(context).textTheme.bodySmall,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${item.producto ?? ''} · ${item.talla ?? ''}/${item.color ?? ''} × ${item.cantidad}'
+                        '${venta.variasSucursales ? ' — desde ${item.sucursal}' : ''}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PrecioPromo(
+                      precio: item.precioOriginal != null &&
+                              item.precioOriginal! > item.precioUnitario
+                          ? item.precioOriginal!
+                          : item.precioUnitario,
+                      precioPromocional: item.precioOriginal != null &&
+                              item.precioOriginal! > item.precioUnitario
+                          ? item.precioUnitario
+                          : null,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
             ),
+            if (venta.ahorro > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Ahorraste Bs ${venta.ahorro.toStringAsFixed(2)} con promociones',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorOferta,
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               'Total: Bs ${venta.total.toStringAsFixed(2)}',

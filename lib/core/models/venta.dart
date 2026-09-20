@@ -14,6 +14,8 @@ class ItemVenta {
   final String? color;
   final int cantidad;
   final double precioUnitario;
+  // Precio sin promoción (null en ventas anteriores a las promociones).
+  final double? precioOriginal;
   final double subtotal;
   // Sucursal de la que sale esta prenda (una compra puede salir de varias).
   final String? sucursal;
@@ -24,6 +26,7 @@ class ItemVenta {
     required this.color,
     required this.cantidad,
     required this.precioUnitario,
+    this.precioOriginal,
     required this.subtotal,
     this.sucursal,
   });
@@ -34,6 +37,7 @@ class ItemVenta {
     color: json['color'] as String?,
     cantidad: json['cantidad'] as int,
     precioUnitario: _toDouble(json['precio_unitario']) ?? 0,
+    precioOriginal: _toDouble(json['precio_original']),
     subtotal: _toDouble(json['subtotal']) ?? 0,
     sucursal: json['sucursal'] as String?,
   );
@@ -86,6 +90,16 @@ class Venta {
     items: (json['items'] as List<dynamic>? ?? [])
         .map((e) => ItemVenta.fromJson(e as Map<String, dynamic>))
         .toList(),
+  );
+
+  /// Cuánto se descontó en la compra por promociones.
+  double get ahorro => items.fold(
+    0.0,
+    (t, i) =>
+        t +
+        (i.precioOriginal != null
+            ? (i.precioOriginal! - i.precioUnitario) * i.cantidad
+            : 0),
   );
 
   Venta copyWithEstado(String nuevoEstado) => Venta(
