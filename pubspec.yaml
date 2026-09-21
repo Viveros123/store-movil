@@ -38,6 +38,8 @@ dependencies:
   flutter_secure_storage: ^10.3.4
   provider: ^6.1.5+1
   url_launcher: ^6.3.2
+  google_mlkit_pose_detection: ^0.15.0
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +62,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/vestidor/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

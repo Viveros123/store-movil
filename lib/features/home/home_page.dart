@@ -13,10 +13,19 @@ import '../reservas/mi_reserva_page.dart';
 import '../reservas/mis_reservas_page.dart';
 import '../reservas/reserva_bolsa_service.dart';
 import '../reservas/reservas_service.dart';
+import '../vestidor/vestidor_prueba_page.dart';
 import '../ventas/mis_compras_page.dart';
 import '../ventas/ventas_service.dart';
 
-enum _MenuCuenta { cuenta, miReserva, reservas, compras, asistente, salir }
+enum _MenuCuenta {
+  cuenta,
+  miReserva,
+  reservas,
+  compras,
+  asistente,
+  vestidorPrueba,
+  salir,
+}
 
 /// Home autenticado: catálogo (CU9/CU10) como contenido principal,
 /// carrito y menú de cuenta (reservas/compras/datos/logout) en el AppBar.
@@ -72,6 +81,11 @@ class _HomePageState extends State<HomePage> {
             builder: (_) => AsistentePage(ia: IaService(auth.api)),
           ),
         );
+        break;
+      case _MenuCuenta.vestidorPrueba:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const VestidorPruebaPage()));
         break;
       case _MenuCuenta.salir:
         context.read<CarritoService>().limpiarLocal();
@@ -144,6 +158,13 @@ class _HomePageState extends State<HomePage> {
                 child: ListTile(
                   leading: Icon(Icons.smart_toy_outlined),
                   title: Text('Asistente virtual'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: _MenuCuenta.vestidorPrueba,
+                child: ListTile(
+                  leading: Icon(Icons.checkroom_outlined),
+                  title: Text('Vestidor virtual (prueba)'),
                 ),
               ),
               const PopupMenuDivider(),

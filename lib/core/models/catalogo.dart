@@ -107,6 +107,13 @@ class CatalogoVariante {
   // Nombre de la promoción que aplica a esta variante puntual.
   final String? promocion;
   final String? imagenEfectivo;
+  // CU20 — vestidor virtual: PNG transparente de la prenda y la posición de
+  // sus hombros dentro de la imagen (fracción del ancho y del alto, 0 a 1).
+  final String? imagenArUrl;
+  final double? anclaIzqX;
+  final double? anclaIzqY;
+  final double? anclaDerX;
+  final double? anclaDerY;
 
   CatalogoVariante({
     required this.id,
@@ -119,7 +126,15 @@ class CatalogoVariante {
     this.precioPromocional,
     this.promocion,
     required this.imagenEfectivo,
+    this.imagenArUrl,
+    this.anclaIzqX,
+    this.anclaIzqY,
+    this.anclaDerX,
+    this.anclaDerY,
   });
+
+  /// Si la variante se puede probar en el vestidor virtual.
+  bool get tieneAr => imagenArUrl != null && imagenArUrl!.isNotEmpty;
 
   factory CatalogoVariante.fromJson(Map<String, dynamic> json) =>
       CatalogoVariante(
@@ -133,6 +148,11 @@ class CatalogoVariante {
         precioPromocional: _toDouble(json['precio_promocional']),
         promocion: json['promocion'] as String?,
         imagenEfectivo: json['imagen_efectivo'] as String?,
+        imagenArUrl: json['imagen_ar_url'] as String?,
+        anclaIzqX: _toDouble(json['ancla_izq_x']),
+        anclaIzqY: _toDouble(json['ancla_izq_y']),
+        anclaDerX: _toDouble(json['ancla_der_x']),
+        anclaDerY: _toDouble(json['ancla_der_y']),
       );
 }
 

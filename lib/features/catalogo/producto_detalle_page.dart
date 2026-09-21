@@ -9,6 +9,8 @@ import '../carrito/carrito_service.dart';
 import '../reservas/agregar_reserva_sheet.dart';
 import '../reservas/mi_reserva_page.dart';
 import '../reservas/reservas_service.dart';
+import '../vestidor/prenda_ar.dart';
+import '../vestidor/vestidor_prueba_page.dart';
 import 'tienda_service.dart';
 
 /// CU9 (detalle) + CU12 (disponibilidad) + CU16 (reservar) + CU21 (carrito).
@@ -132,6 +134,33 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
   void _elegirTalla(int tallaId) {
     setState(() => _tallaSel = tallaId);
     _cargarDisponibilidad();
+  }
+
+  /// CU20 — abre el vestidor virtual con las variantes del producto que tienen
+  /// imagen AR (una por color), empezando por la variante elegida.
+  void _probarEnVestidor() {
+    final producto = _producto;
+    final actual = _varianteSeleccionada;
+    if (producto == null || actual == null || !actual.tieneAr) return;
+
+    final porColor = <int, CatalogoVariante>{};
+    for (final v in producto.variantes) {
+      if (v.tieneAr) porColor.putIfAbsent(v.colorId, () => v);
+    }
+    porColor[actual.colorId] = actual;
+
+    final prendas = porColor.values
+        .map((v) => PrendaAr.desdeVariante(v, nombreProducto: producto.nombre))
+        .toList();
+    final inicial = prendas.firstWhere(
+      (p) => p.url == actual.imagenArUrl,
+      orElse: () => prendas.first,
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VestidorPruebaPage(prendas: prendas, inicial: inicial),
+      ),
+    );
   }
 
   Future<void> _agregarAReserva() async {
@@ -350,6 +379,21 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
                 ),
               ),
             const SizedBox(height: 24),
+            // CU20: solo aparece si la variante elegida tiene imagen de RA.
+            if (variante != null && variante.tieneAr) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      onPressed: _probarEnVestidor,
+                      icon: const Icon(Icons.checkroom_outlined),
+                      label: const Text('Probar en vestidor virtual'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             Row(
               children: [
                 Expanded(
