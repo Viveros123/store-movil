@@ -58,6 +58,7 @@ class _OfflineCatalogPageState extends State<OfflineCatalogPage> {
   bool _cargando = true;
   bool _sincronizando = false;
   bool _online = true;
+  Timer? _probeTimer;
   String? _error;
   String? _exito;
 
@@ -74,6 +75,14 @@ class _OfflineCatalogPageState extends State<OfflineCatalogPage> {
     super.initState();
     _sucursalId = widget.sucursalInicialId;
     _inicializar();
+    // El icono de wifi debe reflejar la conexión real, no solo el último
+    // intento: igual que en la web (comprobarServidor() cada 10s), se
+    // sondea el servidor periódicamente y se pone en rojo si deja de
+    // responder, aunque el sistema operativo siga mostrando wifi activo.
+    _probeTimer = Timer.periodic(
+      const Duration(seconds: 8),
+      (_) => _comprobarConexion(),
+    );
     if (widget.esCliente) {
       _cargarOperaciones();
       widget.tarjetaService
@@ -90,8 +99,25 @@ class _OfflineCatalogPageState extends State<OfflineCatalogPage> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _probeTimer?.cancel();
     _busquedaCtrl.dispose();
     super.dispose();
+  }
+
+  /// Sondea el servidor con una llamada liviana para saber si hay conexión
+  /// real, no solo si el adaptador de red está activo.
+  Future<void> _comprobarConexion() async {
+    if (_sincronizando) return;
+    try {
+      final opciones = await widget.service.sucursales();
+      if (!mounted) return;
+      setState(() {
+        _online = true;
+        _sucursales = opciones;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _online = false);
+    }
   }
 
   Future<void> _cargarOperaciones() async {
@@ -323,7 +349,7 @@ class _OfflineCatalogPageState extends State<OfflineCatalogPage> {
             padding: const EdgeInsets.only(right: 12),
             child: Icon(
               _online ? Icons.wifi : Icons.wifi_off,
-              color: _online ? Colors.green : Colors.orange,
+              color: _online ? Colors.green : Colors.red,
             ),
           ),
         ],
