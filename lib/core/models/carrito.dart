@@ -7,6 +7,23 @@ double? _toDouble(dynamic v) {
   return double.tryParse(v.toString());
 }
 
+/// CU53 — venta al por mayor: descuento ya aplicado a este ítem del carrito.
+class DescuentoMayoristaAplicado {
+  final int cantidadMinima;
+  final double porcentajeDescuento;
+
+  DescuentoMayoristaAplicado({
+    required this.cantidadMinima,
+    required this.porcentajeDescuento,
+  });
+
+  factory DescuentoMayoristaAplicado.fromJson(Map<String, dynamic> json) =>
+      DescuentoMayoristaAplicado(
+        cantidadMinima: json['cantidad_minima'] as int,
+        porcentajeDescuento: _toDouble(json['porcentaje_descuento']) ?? 0,
+      );
+}
+
 class ItemCarrito {
   final int id;
   final int varianteId;
@@ -18,6 +35,8 @@ class ItemCarrito {
   // CU33: precio sin descuento y nombre de la promoción aplicada, si hay.
   final double? precioOriginal;
   final String? promocion;
+  // CU53 — venta al por mayor: presente cuando la cantidad ya alcanzó el mínimo.
+  final DescuentoMayoristaAplicado? descuentoMayorista;
   final int cantidad;
   final double? subtotal;
   final bool disponible;
@@ -32,6 +51,7 @@ class ItemCarrito {
     required this.precioUnitario,
     this.precioOriginal,
     this.promocion,
+    this.descuentoMayorista,
     required this.cantidad,
     required this.subtotal,
     required this.disponible,
@@ -47,6 +67,11 @@ class ItemCarrito {
     precioUnitario: _toDouble(json['precio_unitario']),
     precioOriginal: _toDouble(json['precio_original']),
     promocion: json['promocion'] as String?,
+    descuentoMayorista: json['descuento_mayorista'] != null
+        ? DescuentoMayoristaAplicado.fromJson(
+            json['descuento_mayorista'] as Map<String, dynamic>,
+          )
+        : null,
     cantidad: json['cantidad'] as int,
     subtotal: _toDouble(json['subtotal']),
     disponible: json['disponible'] as bool,

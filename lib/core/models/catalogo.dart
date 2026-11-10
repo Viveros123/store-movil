@@ -106,6 +106,9 @@ class CatalogoVariante {
   final double? precioPromocional;
   // Nombre de la promoción que aplica a esta variante puntual.
   final String? promocion;
+  // CU53 — venta al por mayor: null si esta variante no tiene regla vigente.
+  final int? mayoreoCantidadMinima;
+  final double? mayoreoPorcentaje;
   final String? imagenEfectivo;
   // CU20 — vestidor virtual: PNG transparente de la prenda y la posición de
   // sus hombros dentro de la imagen (fracción del ancho y del alto, 0 a 1).
@@ -125,6 +128,8 @@ class CatalogoVariante {
     required this.precioEfectivo,
     this.precioPromocional,
     this.promocion,
+    this.mayoreoCantidadMinima,
+    this.mayoreoPorcentaje,
     required this.imagenEfectivo,
     this.imagenArUrl,
     this.anclaIzqX,
@@ -135,6 +140,9 @@ class CatalogoVariante {
 
   /// Si la variante se puede probar en el vestidor virtual.
   bool get tieneAr => imagenArUrl != null && imagenArUrl!.isNotEmpty;
+
+  /// CU53 — si esta variante tiene una regla de venta al por mayor vigente.
+  bool get tieneMayoreo => mayoreoCantidadMinima != null && mayoreoPorcentaje != null;
 
   factory CatalogoVariante.fromJson(Map<String, dynamic> json) =>
       CatalogoVariante(
@@ -147,6 +155,8 @@ class CatalogoVariante {
         precioEfectivo: _toDouble(json['precio_efectivo']) ?? 0,
         precioPromocional: _toDouble(json['precio_promocional']),
         promocion: json['promocion'] as String?,
+        mayoreoCantidadMinima: json['mayoreo_cantidad_minima'] as int?,
+        mayoreoPorcentaje: _toDouble(json['mayoreo_porcentaje']),
         imagenEfectivo: json['imagen_efectivo'] as String?,
         imagenArUrl: json['imagen_ar_url'] as String?,
         anclaIzqX: _toDouble(json['ancla_izq_x']),

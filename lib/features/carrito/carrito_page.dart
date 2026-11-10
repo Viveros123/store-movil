@@ -40,7 +40,7 @@ class _CarritoPageState extends State<CarritoPage> {
 
   Future<void> _cambiarCantidad(ItemCarrito item, int delta) async {
     final nueva = item.cantidad + delta;
-    if (nueva < 1 || nueva > 20) return;
+    if (nueva < 1 || nueva > 500) return;
     setState(() => _actualizando = item.id);
     try {
       await context.read<CarritoService>().actualizarCantidad(item.id, nueva);
@@ -276,6 +276,13 @@ class _TarjetaItem extends StatelessWidget {
                           ),
                           EtiquetaOferta(item.promocion!),
                         ],
+                      ),
+                    )
+                  else if (item.descuentoMayorista != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: EtiquetaOferta(
+                        'Mayoreo: -${item.descuentoMayorista!.porcentajeDescuento.toStringAsFixed(0)}%',
                       ),
                     ),
                   const SizedBox(height: 6),

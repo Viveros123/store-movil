@@ -322,6 +322,43 @@ class _ProductoDetallePageState extends State<ProductoDetallePage> {
                 child: EtiquetaOferta(etiquetaPromo),
               ),
             ],
+            // CU53 — venta al por mayor: aviso para la variante elegida.
+            if (variante != null && variante.tieneMayoreo) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.local_shipping_outlined,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Venta al por mayor: '
+                        '${variante.mayoreoPorcentaje!.toStringAsFixed(0)}% de '
+                        'descuento llevando ${variante.mayoreoCantidadMinima} '
+                        'unidades o más de esta talla/color.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (producto.descripcion != null &&
                 producto.descripcion!.trim().isNotEmpty) ...[
               const SizedBox(height: 12),
